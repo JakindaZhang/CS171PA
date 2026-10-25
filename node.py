@@ -31,6 +31,8 @@ class Node:
         self.process_lock = threading.Lock()
         self.logger = MessageLogger(name)
 
+        self.stop_event = threading.Event()
+
         if name in AGENT_INDEX:
             self.vc = VectorClock(AGENT_INDEX[name])
         else:
@@ -43,6 +45,7 @@ class Node:
 
             return self.delivered_clock.copy()
 
+    
     def start_server(self):
         server = socket.socket(
             socket.AF_INET,
@@ -57,17 +60,25 @@ class Node:
 
         server.bind((HOST, self.port))
         server.listen()
+        server.settimeout(0.5)
 
         print(f"{self.name} listening on {self.port}")
 
-        while True:
-            conn, addr = server.accept()
+        try:
+            while not self.stop_event.is_set():
+                try:
+                    conn, addr = server.accept()
+                except socket.timeout:
+                    continue
 
-            threading.Thread(
-                target=self.handle_connection,
-                args=(conn,),
-                daemon=True
-            ).start()
+                threading.Thread(
+                    target=self.handle_connection,
+                    args=(conn,),
+                    daemon=True
+                ).start()
+        finally:
+            server.close()
+
 
     def handle_connection(self, conn):
         with conn:
