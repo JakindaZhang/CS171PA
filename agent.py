@@ -85,8 +85,7 @@ class Agent(Node):
         # Two independently delayed sends.
         self.delayed_send("Poet", verse_message)
 
-        if remaining > 1:
-            self.delayed_send(next_agent, verse_message)
+        self.delayed_send(next_agent, verse_message)
 
     
     def delayed_send(self, target, message):
