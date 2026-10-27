@@ -1,4 +1,3 @@
-
 import random
 import threading
 import time
@@ -40,8 +39,7 @@ class Agent(Node):
 
         poem_id = message["poem_id"]
 
-        # A REQUEST starts a new chain.
-        # A VERSE continues an existing chain.
+        # A REQUEST starts a new chain, VERSE continues an exisiting chain
         if message["type"] == "REQUEST":
             previous_words = 0
             received_clock = None
@@ -51,7 +49,7 @@ class Agent(Node):
 
         word_count = previous_words + 1
 
-        # Create one verse event.
+        # Create one verse event
         with self.lock:
             if received_clock is not None:
                 self.vc.merge(received_clock)
@@ -77,7 +75,7 @@ class Agent(Node):
             "clock": clock
         }
 
-        # Select a different agent.
+        # Randonly select another agents
         other_agents = [
             name for name in AGENTS
             if name != self.name
@@ -87,9 +85,8 @@ class Agent(Node):
         # Two independently delayed sends.
         self.delayed_send("Poet", verse_message)
 
-        # if remaining > 1:
-        #     self.delayed_send(next_agent, verse_message)
-        self.delayed_send(next_agent, verse_message)
+        if remaining > 1:
+            self.delayed_send(next_agent, verse_message)
 
     
     def delayed_send(self, target, message):
